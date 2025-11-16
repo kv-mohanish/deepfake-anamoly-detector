@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Anomaly Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        body { font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; }
+        .glass-card { background: rgba(17,24,39,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(139,92,246,0.3); }
+        .glow { box-shadow: 0 0 40px rgba(139,92,246,0.4); }
+        .scan-line { position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #a78bfa, transparent); animation: scan 2s linear infinite; }
+        @keyframes scan { 0% { top: 0 } 100% { top: 100% } }
+        @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 30px rgba(139,92,246,0.5); } 50% { box-shadow: 0 0 50px rgba(139,92,246,0.8); } }
+        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .float { animation: float 3s ease-in-out infinite; }
+        .upload-zone { border: 2px dashed rgba(167,139,250,0.3); transition: all 0.3s ease; }
+        .upload-zone:hover { border-color: rgba(167,139,250,0.6); background: rgba(139,92,246,0.1); }
+        .upload-zone.dragover { border-color: #a78bfa; background: rgba(167,139,250,0.2); transform: scale(1.02); }
+        @keyframes shimmer { 0%{background-position:-1000px 0} 100%{background-position:1000px 0} }
+        .shimmer { background: linear-gradient(90deg,transparent, rgba(255,255,255,0.3), transparent); background-size:1000px 100%; animation: shimmer 2s infinite; }
+        .progress-track { background: rgba(255,255,255,0.06); height: 8px; border-radius: 999px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; transition: width 0.2s linear; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+<div class="container max-w-5xl">
+    <div class="text-center mb-8 float">
+        <h1 class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 mb-3 drop-shadow-2xl tracking-tight">Anomaly Detector</h1>
+        <p class="text-purple-200 text-lg font-medium tracking-wide">AI-Powered Image Authenticity Analysis</p>
+    </div>
+
+    <div class="glass-card rounded-3xl p-8 mb-6 glow" role="region" aria-label="Anomaly Detector card">
+
+        <div id="upload-zone" class="upload-zone rounded-2xl p-8 text-center mb-6 cursor-pointer relative overflow-hidden"
+             tabindex="0" aria-label="Upload image area. Click or drop an image here.">
+            <input type="file" id="file-input" accept="image/png, image/jpeg, image/jpg" class="hidden" aria-hidden="true">
+            <div id="upload-prompt" class="transition-all duration-300">
+                <svg class="w-20 h-20 mx-auto mb-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <p class="text-white text-xl font-semibold mb-2 tracking-wide">Drop your image here</p>
+                <p class="text-purple-200/80 font-medium">or click to browse</p>
+                <p class="text-purple-300/50 text-sm mt-3 font-medium">Supports PNG, JPEG, JPG • Max 10 MB</p>
+            </div>
+        </div>
+
+        <div id="preview-container" class="hidden relative rounded-2xl overflow-hidden mb-6" aria-live="polite">
+            <img id="preview-img" class="w-full max-w-md mx-auto rounded-2xl shadow-2xl" alt="Image preview">
+            <div id="scan-line" class="scan-line hidden" aria-hidden="true"></div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button id="detect-btn"
+                    class="relative bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold text-lg py-4 px-12 rounded-full shadow-2xl hover:from-purple-500 hover:to-purple-600 hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    aria-label="Analyze image">
+                <span id="btn-text">Analyze Image</span>
+                <span id="spinner" class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden="true">
+                    <svg class="animate-spin h-6 w-6 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+
+        <div id="upload-progress-area" class="hidden mb-6 text-center">
+            <div class="mx-auto max-w-md">
+                <div class="progress-track mb-2">
+                    <div id="progress-fill" class="progress-fill bg-purple-500" style="width: 0%;"></div>
+                </div>
+                <div id="progress-text" class="text-sm text-purple-200">Uploading: 0%</div>
+            </div>
+        </div>
+
+        <div id="result-container" class="text-center py-8">
+            <div class="inline-block">
+                <div id="score-ring" class="relative w-48 h-48 mx-auto mb-6" role="img" aria-label="Result score ring">
+                    <svg class="transform -rotate-90 w-48 h-48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="96" cy="96" r="88" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="none"></circle>
+                        <circle id="progress-circle" cx="96" cy="96" r="88" stroke="#667eea" stroke-width="8" fill="none"
+                                stroke-dasharray="552.92" stroke-dashoffset="552.92" class="transition-all duration-1000 ease-out" stroke-linecap="round"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <p id="result-text" class="text-6xl font-bold text-white drop-shadow-lg">--</p>
+                    </div>
+                </div>
+                <p id="score-text" class="text-purple-200 text-lg font-medium tracking-wide">Upload an image to begin analysis</p>
+                <div id="verdict-badge" class="hidden mt-4 inline-block px-6 py-2 rounded-full text-white font-semibold text-lg tracking-wide"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+        <div class="glass-card rounded-2xl p-6">
+            <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-3">
+                    <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-bold text-lg tracking-wide">Positive Score</h3>
+            </div>
+            <p class="text-purple-200/80 font-medium">Indicates authentic, unmodified image</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6">
+            <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-3">
+                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-bold text-lg tracking-wide">Negative Score</h3>
+            </div>
+            <p class="text-purple-200/80 font-medium">Suggests potential manipulation detected</p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // ========== CONFIG ==========
+    // Set to your backend endpoint. Use full URL for local dev to avoid ambiguous relative path issues.
+    const API_URL = 'http://127.0.0.1:5000/predict';
+
+    // Size limits
+    const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB allowed
+    const COMPRESS_THRESHOLD = 2 * 1024 * 1024; // compress if > 2 MB
+    const COMPRESS_QUALITY = 0.8; // JPEG quality
+
+    // ========== ELEMENTS ==========
+    const fileInput = document.getElementById('file-input');
+    const detectBtn = document.getElementById('detect-btn');
+    const uploadZone = document.getElementById('upload-zone');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('preview-img');
+    const scanLine = document.getElementById('scan-line');
+    const resultText = document.getElementById('result-text');
+    const scoreText = document.getElementById('score-text');
+    const verdictBadge = document.getElementById('verdict-badge');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btn-text');
+    const progressCircle = document.getElementById('progress-circle');
+    const uploadProgressArea = document.getElementById('upload-progress-area');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+
+    const CIRCUMFERENCE = 2 * Math.PI * 88; // ~552.92
+    progressCircle.style.strokeDasharray = CIRCUMFERENCE.toString();
+    progressCircle.style.strokeDashoffset = CIRCUMFERENCE.toString();
+
+    // ========== HELPERS ==========
+    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+    function setLoading(isLoading) {
+        if (isLoading) {
+            spinner.classList.remove('hidden');
+            btnText.classList.add('invisible');
+            detectBtn.disabled = true;
+            scanLine.classList.remove('hidden');
+        } else {
+            spinner.classList.add('hidden');
+            btnText.classList.remove('invisible');
+            detectBtn.disabled = false;
+            scanLine.classList.add('hidden');
+            uploadProgressArea.classList.add('hidden');
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Uploading: 0%';
+        }
+    }
+
+    function updateProgressCircle(scoreValue) {
+        const normalized = clamp(scoreValue, -1, 1);
+        const percentage = ((normalized + 1) / 2) * 100;
+        const offset = CIRCUMFERENCE - (percentage / 100) * CIRCUMFERENCE;
+        progressCircle.style.strokeDashoffset = offset;
+    }
+
+    function setVerdict(scoreValue) {
+        if (scoreValue < -0.5) {
+            progressCircle.style.stroke = '#ef4444';
+            resultText.style.color = '#fca5a5';
+            verdictBadge.textContent = '⚠️ Likely Deepfake';
+            verdictBadge.className = 'mt-4 inline-block px-6 py-2 rounded-full font-semibold text-lg bg-red-500/20 text-red-300';
+        } else if (scoreValue < 0) {
+            progressCircle.style.stroke = '#f59e0b';
+            resultText.style.color = '#fcd34d';
+            verdictBadge.textContent = '⚡ Suspicious';
+            verdictBadge.className = 'mt-4 inline-block px-6 py-2 rounded-full font-semibold text-lg bg-yellow-500/20 text-yellow-300';
+        } else if (scoreValue < 0.5) {
+            progressCircle.style.stroke = '#3b82f6';
+            resultText.style.color = '#93c5fd';
+            verdictBadge.textContent = '✓ Probably Authentic';
+            verdictBadge.className = 'mt-4 inline-block px-6 py-2 rounded-full font-semibold text-lg bg-blue-500/20 text-blue-300';
+        } else {
+            progressCircle.style.stroke = '#10b981';
+            resultText.style.color = '#6ee7b7';
+            verdictBadge.textContent = '✓ Highly Authentic';
+            verdictBadge.className = 'mt-4 inline-block px-6 py-2 rounded-full font-semibold text-lg bg-green-500/20 text-green-300';
+        }
+        verdictBadge.classList.remove('hidden');
+    }
+
+    function showError(message) {
+        resultText.textContent = 'Error';
+        resultText.style.color = '#ef4444';
+        scoreText.textContent = message;
+        scoreText.className = 'text-red-300 text-lg font-medium tracking-wide';
+        progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+        verdictBadge.classList.add('hidden');
+    }
+
+    // ========== FILE PREVIEW & COMPRESSION ==========
+    function handleFileSelect(file) {
+        if (!file.type.startsWith('image/')) {
+            scoreText.textContent = 'Please upload an image file';
+            return;
+        }
+        if (file.size > MAX_FILE_BYTES) {
+            scoreText.textContent = `File is larger than ${(MAX_FILE_BYTES / (1024*1024)).toFixed(1)} MB. Please use a smaller file.`;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            uploadPrompt.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('pulse-glow');
+
+            resultText.textContent = '--';
+            resultText.style.color = '#ffffff';
+            scoreText.textContent = "Click 'Analyze Image' to get the score";
+            scoreText.className = "text-purple-200 text-lg font-medium tracking-wide";
+            verdictBadge.classList.add('hidden');
+            progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function maybeCompressImage(file) {
+        if (!file.type.startsWith('image/') || file.size <= COMPRESS_THRESHOLD) return file;
+
+        // convert to image then canvas
+        const img = await new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => {
+                const image = new Image();
+                image.onload = () => res(image);
+                image.onerror = rej;
+                image.src = r.result;
+            };
+            r.onerror = rej;
+            r.readAsDataURL(file);
+        });
+
+        const MAX_DIM = 1600;
+        const ratio = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', COMPRESS_QUALITY));
+        if (!blob) return file;
+        if (blob.size >= file.size) return file;
+        return new File([blob], (file.name.replace(/\.[^/.]+$/, '') + '.jpg'), { type: 'image/jpeg' });
+    }
+
+    // ========== DRAG & DROP (with DataTransfer) ==========
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            // reliable population of fileInput.files via DataTransfer
+            try {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+            } catch (err) {
+                console.warn('DataTransfer not available — fileInput.files may not be set.', err);
+            }
+            handleFileSelect(file);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file) handleFileSelect(file);
+    });
+
+    // ========== UPLOAD WITH PROGRESS (XHR) ==========
+    function uploadWithProgress(formData, onProgress) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            console.log('Starting XHR POST to', API_URL);
+            xhr.open('POST', API_URL, true);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable && typeof onProgress === 'function') {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(percent);
+                }
+            };
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    console.log('XHR finished: status=', xhr.status);
+                    console.log('Response text:', xhr.responseText);
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const json = JSON.parse(xhr.responseText);
+                            resolve(json);
+                        } catch (err) {
+                            console.error('Invalid JSON from server:', err);
+                            reject(new Error('Invalid JSON response from server'));
+                        }
+                    } else {
+                        console.error('Server responded with error', xhr.status, xhr.statusText, xhr.responseText);
+                        reject(new Error(`Server error ${xhr.status}: ${xhr.statusText || xhr.responseText}`));
+                    }
+                }
+            };
+
+            xhr.onerror = () => {
+                console.error('XHR network error');
+                reject(new Error('Network error during upload'));
+            };
+
+            try {
+                xhr.send(formData);
+            } catch (err) {
+                console.error('XHR send error', err);
+                reject(err);
+            }
+        });
+    }
+
+    // ========== MAIN DETECT BUTTON ==========
+    detectBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            scoreText.textContent = "Please select an image first";
+            return;
+        }
+
+        if (file.size > MAX_FILE_BYTES) {
+            scoreText.textContent = `File too large — please use a file under ${(MAX_FILE_BYTES/(1024*1024)).toFixed(1)} MB`;
+            return;
+        }
+
+        setLoading(true);
+        uploadProgressArea.classList.remove('hidden');
+
+        try {
+            const payloadFile = await maybeCompressImage(file);
+            console.log('Uploading file:', payloadFile.name, 'size:', payloadFile.size);
+
+            const formData = new FormData();
+            formData.append('image', payloadFile, payloadFile.name);
+
+            const data = await uploadWithProgress(formData, (percent) => {
+                progressFill.style.width = percent + '%';
+                progressText.textContent = 'Uploading: ' + percent + '%';
+            });
+
+            if (!data) throw new Error('Empty response from API');
+            if (data.error) throw new Error(data.error);
+
+            if (typeof data.score === 'undefined' && typeof data.prediction !== 'undefined') data.score = data.prediction;
+            if (typeof data.score === 'undefined') throw new Error('No score in API response');
+
+            const scoreValue = parseFloat(data.score);
+            if (Number.isNaN(scoreValue)) throw new Error('Score returned is not a number');
+
+            setTimeout(() => {
+                resultText.textContent = (Math.round(scoreValue * 100) / 100).toString();
+                updateProgressCircle(scoreValue);
+                setVerdict(scoreValue);
+                scoreText.textContent = 'Analysis complete';
+                scoreText.className = 'text-purple-200 text-lg font-medium tracking-wide';
+            }, 200);
+
+        } catch (err) {
+            console.error('Detection error:', err);
+            showError(err.message || 'Could not connect to the model');
+        } finally {
+            setTimeout(() => setLoading(false), 600);
+        }
+    });
+
+    // Keyboard shortcut (Ctrl/Cmd+Enter)
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') detectBtn.click();
+    });
+
+</script>
+</body>
+</html>
