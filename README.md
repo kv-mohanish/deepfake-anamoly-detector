@@ -1,6 +1,6 @@
 <p align="center">🧠 AI-Powered Image Anomaly Detector</p>
 <p align="center">Unsupervised Deepfake & Image Anomaly Detection</p> <p align="center"> <img src="https://img.shields.io/badge/Python-3.8+-blue" /> <img src="https://img.shields.io/badge/Framework-Flask-red" /> <img src="https://img.shields.io/badge/Model-One--Class%20SVM-purple" /> <img src="https://img.shields.io/badge/UI-Glassmorphism-0ABAB5" /> <img src="https://img.shields.io/badge/License-MIT-green" /> </p> <p align="center"> 🔍 Detect anomalies. 🛡️ Identify deepfakes. 🚀 All using unsupervised ML + deep visual features. </p>
-🎨 Demo (Add GIF Here)
+
 <p align="center"> <img src="assets/demo.gif" width="600"> </p>
 ✨ Features
 
@@ -126,3 +126,4 @@ If you like this project:
 ⭐ Star this repo
 🐛 Report issues
 📣 Share with others
+
