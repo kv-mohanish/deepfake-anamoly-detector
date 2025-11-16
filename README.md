@@ -1,125 +1,128 @@
-*AI-Powered Image Anomaly Detector
+<p align="center">🧠 AI-Powered Image Anomaly Detector</p>
+<p align="center">Unsupervised Deepfake & Image Anomaly Detection</p> <p align="center"> <img src="https://img.shields.io/badge/Python-3.8+-blue" /> <img src="https://img.shields.io/badge/Framework-Flask-red" /> <img src="https://img.shields.io/badge/Model-One--Class%20SVM-purple" /> <img src="https://img.shields.io/badge/UI-Glassmorphism-0ABAB5" /> <img src="https://img.shields.io/badge/License-MIT-green" /> </p> <p align="center"> 🔍 Detect anomalies. 🛡️ Identify deepfakes. 🚀 All using unsupervised ML + deep visual features. </p>
+🎨 Demo (Add GIF Here)
+<p align="center"> <img src="assets/demo.gif" width="600"> </p>
+✨ Features
 
-This project is an AI-powered web application designed to detect anomalies in images, with a primary use case of identifying potential "deepfakes." It uses an unsupervised learning approach (One-Class SVM) trained only on authentic images. This allows it to flag new, unseen types of fakes as "anomalies" without needing prior training on them.
+🎨 Glassmorphism UI with smooth animations & score ring
 
-The system provides a real-time "anomaly score":
+⚡ Real-Time Image Analysis with instant scoring
 
-Positive Score: The image is statistically similar to the training data (Likely Real).
+🧠 Unsupervised Deepfake Detection
 
-Negative Score: The image is a statistical outlier (Likely Deepfake / Anomaly).
+🔥 VGG16 Feature Extraction (512-D embeddings)
 
-Features
+🌐 Flask API Backend
 
-Beautiful, Responsive UI: A stunning "glassmorphism" frontend with an animated score ring (your index.html).
+🎛️ Optional Streamlit App
 
-Real-Time Analysis: Upload an image (PNG, JPG) and get a score in seconds.
+📦 Production-ready file structure
 
-Unsupervised Model: Built with a One-Class SVM, it doesn't need to be trained on fakes to detect them.
+🧩 How It Works
+User Upload → Frontend → Flask API
+             → VGG16 Feature Extractor
+             → StandardScaler
+             → One-Class SVM
+             → JSON Response {"score": -0.32}
 
-Deep Feature Extraction: Uses a pre-trained VGG16 (CNN) to capture complex image features.
-
-API-First Design: The frontend and backend are decoupled, with the model served via a Flask API.
-
-(Alternative) Streamlit App: A simpler, styled all-in-one Python app (streamlit_app_styled.py) is also included for easy deployment.
-
-How It Works: The Architecture
-
-The project is split into three parts: a one-time trainer, a backend API, and a frontend client.
-
-User's Browser (index.html) sends the uploaded image to the API.
-
-Flask API Server (backend_server.py) receives the image.
-
-The image is passed through VGG16 to extract a 512-dimension feature vector.
-
-The vector is scaled using the pre-fit StandardScaler.
-
-The scaled vector is fed into the One-Class SVM to get an anomaly score.
-
-The server returns a JSON response (e.g., {"score": -0.123}) to the frontend.
-
-The frontend displays the score in the animated UI.
-
-The train_model.py script is run only once to create the svm_model.joblib and scaler.joblib files.
-
-Getting Started: Running Locally
-
-Follow these steps to run the full web application (index.html + backend_server.py) on your local machine.
-
-Prerequisites
-
-Python 3.8+
-
-A modern web browser (Chrome, Firefox, Edge)
-
-Step 1: Clone & Install
-
-Clone this repository to your local machine.
-
-Create a Python virtual environment:
+💡 Score Meaning
+Score	Interpretation
+Positive	Image is similar to training data (Likely Real)
+Negative	Statistical outlier (Likely Fake / Anomaly)
+🚀 Getting Started
+1️⃣ Install Dependencies
+git clone <repo-url>
+cd <repo>
 
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .\.venv\Scripts\Activate
-
-
-Install the required Python packages (see requirements.txt):
+source .venv/bin/activate      # Windows: .\.venv\Scripts\activate
 
 pip install -r requirements.txt
 
-
-Step 2: Train the Model (One-Time Step)
-
-Before you can run the server, you must train the SVM model and scaler using the train_model.py script.
-
+🏋️‍♂️ 2️⃣ Train the Model (One-Time Only)
 python train_model.py
 
 
-This will take several minutes. It will download the VGG16 and CelebA dataset, process 2,000 images, and create two new files: svm_model.joblib and scaler.joblib.
+This generates:
 
-Step 3: Run the Backend API Server
+svm_model.joblib
+scaler.joblib
 
-Once training is complete, run the Flask backend using backend_server.py. This server must stay running in your terminal.
-
+🖥️ 3️⃣ Run the Backend Server
 python backend_server.py
 
 
-You will see output indicating the server is running on http://127.0.0.1:5000.
+Runs at:
 
-Step 4: Use the Frontend
+http://127.0.0.1:5000
 
-Do not use the "Preview" button in an editor, as it may block the API request.
+🌐 4️⃣ Launch the Frontend
 
-Navigate to your project folder in your File Explorer.
+Simply open:
 
-Right-click on index.html and choose "Open with" -> "Google Chrome" (or any other browser).
+index.html
 
-You will see the website. You can now upload an image and click "Analyze Image" to get a live score from your backend.
 
-Alternative: Running with Streamlit
+Do not use VS Code "Preview".
+Open it directly in Chrome / Firefox.
 
-If you want a simpler, all-in-one app (without the custom index.html), you can use the styled Streamlit app.
-
-Make sure you've completed Step 1 (Install) and Step 2 (Train).
-
-Run the Streamlit app (streamlit_app_styled.py) from your terminal:
-
+🎨 Alternative UI (Streamlit)
 streamlit run streamlit_app_styled.py
 
-
-A new browser tab will automatically open with a fully functional (and beautifully styled) app.
-
-Project File Structure
-
+📁 Project Structure
 /
-├── .venv/                      # Your Python virtual environment
-├── svm_model.joblib            # (Generated) The trained SVM model
-├── scaler.joblib               # (Generated) The trained scaler
+├── svm_model.joblib
+├── scaler.joblib
 │
-├── train_model.py              # (Step 1) Script to train and save the models
-├── backend_server.py           # (Step 2) The Python Flask API backend
-├── index.html                  # (Step 3) The beautiful custom frontend
+├── train_model.py
+├── backend_server.py
+├── index.html
 │
-├── streamlit_app_styled.py     # (Alternative) A styled, all-in-one Streamlit app
-├── requirements.txt            # All Python dependencies
-│
-└── README.md                   # This file
+├── streamlit_app_styled.py
+├── requirements.txt
+└── README.md
+
+📦 Tech Stack
+
+Python 3.8+
+
+TensorFlow / Keras (VGG16)
+
+Scikit-learn (One-Class SVM, StandardScaler)
+
+Flask
+
+Streamlit (optional)
+
+HTML + TailwindCSS
+
+🛠️ API Endpoint
+POST /predict
+curl -X POST http://127.0.0.1:5000/predict -F "image=@sample.jpg"
+
+Example Response
+{
+  "score": -0.2438
+}
+
+🔮 Future Enhancements
+
+ Add ROC curve and evaluation metrics
+
+ Add mobile-friendly UI
+
+ Add GPU inference support
+
+ Add ONNX export
+
+📜 License
+
+This project is licensed under the MIT License.
+
+🌟 Support
+
+If you like this project:
+
+⭐ Star this repo
+🐛 Report issues
+📣 Share with others
