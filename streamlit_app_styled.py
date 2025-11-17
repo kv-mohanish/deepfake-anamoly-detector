@@ -182,7 +182,7 @@ else:
             if score is not None:
                 st.metric(label="Anomaly Score", value=f"{score:+.4f}")
                 
-                if score < 0:
+                if score < -10:
                     st.error(f"**Result: Likely Deepfake / Anomaly**")
                     st.write("This image is statistically different from the training data of real faces.")
                 else:
