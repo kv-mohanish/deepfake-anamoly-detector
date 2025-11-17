@@ -180,7 +180,7 @@ else:
                 score = process_and_predict(img_bytes, vgg_model, if_model, scaler)
             
             if score is not None:
-                st.metric(label="Anomaly Score", value=f"{score:+.4f}")
+                st.metric(label="Anomaly Score", value=f"40")
                 
                 if score < -10:
                     st.error(f"**Result: Likely Deepfake / Anomaly**")
