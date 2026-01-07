@@ -207,7 +207,7 @@ Deployment : Local / Cloud
 # =========================================================
 st.markdown("""
 
-<div style="text-align:center;"> <h1 class="GLITCH">DEEPFAKE ANOMALY DETECTOR</h1> <h3 style="color:#bc13fe;">// ANOMALY SCORER FOR PROBABLE DEEPFAKES //</h3> </div> """, unsafe_allow_html=True)
+<div style="text-align:center;"> <h1 class="glitch">DEEPFAKE ANOMALY DETECTOR</h1> <h3 style="color:#bc13fe;">// ANOMALY SCORER FOR PROBABLE DEEPFAKES //</h3> </div> """, unsafe_allow_html=True)
 
 st.markdown('<div class="pipeline"></div>', unsafe_allow_html=True)
 
