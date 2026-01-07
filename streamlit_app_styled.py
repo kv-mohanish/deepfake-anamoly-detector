@@ -269,6 +269,7 @@ def predict(img_bytes, filename):
         log_entry = {
             "timestamp": datetime.now(),
             "filename": filename,
+            "image_data": img_bytes,
             "score": score,
             "is_anomaly": bool(score < THRESHOLD)
         }
