@@ -55,7 +55,7 @@ h1, h2, h3, h4 {
 .glitch {
     color: #00f3ff;
     text-shadow: 2px 0 #bc13fe, -2px 0 #00ffea;
-    animation: glitch 1.5s infinite;
+    
 }
 @keyframes glitch {
     0% { transform: translate(0); }
@@ -195,10 +195,11 @@ Deployment : Local / Cloud
     st.markdown("""
     👾 DEV CREW
     ```text
+    CHIRAG K
     MOHANISH K V 
     PRANEETH P K 
     THRISHAL     
-    CHIRAG K 
+     
     ```
                 """)
 # =========================================================
@@ -206,7 +207,7 @@ Deployment : Local / Cloud
 # =========================================================
 st.markdown("""
 
-<div style="text-align:center;"> <h1 class="">DEEPFAKE ANOMALY DETECTOR</h1> <h3 style="color:#bc13fe;">// ANOMALY SCORER FOR PROBABLE DEEPFAKES //</h3> </div> """, unsafe_allow_html=True)
+<div style="text-align:center;"> <h1 class="GLITCH">DEEPFAKE ANOMALY DETECTOR</h1> <h3 style="color:#bc13fe;">// ANOMALY SCORER FOR PROBABLE DEEPFAKES //</h3> </div> """, unsafe_allow_html=True)
 
 st.markdown('<div class="pipeline"></div>', unsafe_allow_html=True)
 
