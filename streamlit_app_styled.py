@@ -293,7 +293,7 @@ if uploaded_file and system_ok:
         st.markdown("#### 🧠 ANALYSIS CORE")
 
         with st.spinner("⚡ PROPAGATING THROUGH NEURAL PIPELINE..."):
-            score = predict(img_bytes)
+            score = predict(img_bytes, uploaded_file.name)
 
         st.metric("🧠 ANOMALY SCORE", f"{score:.4f}")
 
