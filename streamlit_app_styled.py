@@ -248,7 +248,7 @@ input_method = st.radio("SELECT INPUT SOURCE", ("UPLOAD FILE", "UPLOAD FROM CAME
 uploaded_file = None
 camera_file = None
 
-if input_method == "📁 UPLOAD FILE":
+if input_method == "UPLOAD FILE":
     uploaded_file = st.file_uploader("UPLOAD IMAGE FOR ANALYSIS", type=["jpg", "jpeg", "png"])
 else:
     camera_file = st.camera_input("CAPTURE LIVE FEED")
