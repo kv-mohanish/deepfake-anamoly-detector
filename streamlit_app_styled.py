@@ -243,7 +243,7 @@ st.markdown("""
 # =========================================================
 # INPUT SELECTION (Added Logic)
 # =========================================================
-input_method = st.radio("SELECT INPUT SOURCE", ("📁 UPLOAD FILE", "📸 LIVE CAMERA"), horizontal=True)
+input_method = st.radio("SELECT INPUT SOURCE", ("UPLOAD FILE", "UPLOAD FROM CAMERA"), horizontal=True)
 
 uploaded_file = None
 camera_file = None
