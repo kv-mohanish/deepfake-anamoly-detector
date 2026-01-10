@@ -148,7 +148,7 @@ def load_models():
     scaler = joblib.load("scaler.joblib")
     
     # Database connection
-    uri = "mongodb+srv://kvmohanish_db_user:deepfakepassword123@cluster0.tteyk9i.mongodb.net/?retryWrites=true&w=majority"
+    uri = "mongodb+srv://db_user:<password>@cluster0.tteyk9i.mongodb.net/?retryWrites=true&w=majority"
     client = pymongo.MongoClient(uri)
     db = client["DeepfakeDetection"]
     collection = db["analysis_logs"]
